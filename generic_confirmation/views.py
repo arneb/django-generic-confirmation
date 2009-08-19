@@ -47,13 +47,13 @@ def confirm_by_get(request, token, template_name='confirm.html',
     if form.is_valid():
         form.save()
         if success_url is None:
-                return render_to_response(success_template, 
+            return render_to_response(success_template, 
                     {'success_message': success_message}, 
                     context_instance=RequestContext(request))
-            else:
-                if success_message is not None:
-                    request.user.message_set.create(message=success_message)
-                return HttpResponseRedirect(success_url)
+        else:
+            if success_message is not None:
+                request.user.message_set.create(message=success_message)
+            return HttpResponseRedirect(success_url)
     else:
         return render_to_response(template_name, {}, 
                                   context_instance=RequestContext(request))
