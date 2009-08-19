@@ -13,7 +13,9 @@ class ConfirmationManager(models.Manager):
             return False
             
         if not action.is_expired():
-            return action.resume_form_save()
+            obj = action.resume_form_save()
+            action.delete()
+            return obj
         
         return False
 
