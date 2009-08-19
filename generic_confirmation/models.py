@@ -8,16 +8,23 @@ from generic_confirmation.fields import PickledObjectField
 class ConfirmationManager(models.Manager):
     def confirm(self, token):
         try:
-            action = self.get(token=token)
+            action = self.exclude(confirmed=True).get(token=token)
         except self.model.DoesNotExist:
             return False
             
         if not action.is_expired():
             obj = action.resume_form_save()
-            action.delete()
+            action.confirmed = True
+            action.save() # FIXME: should we delete() here?
             return obj
         
         return False
+        
+    def pending_for(self, instance):
+        ct = ContentType.objects.get_for_model(instance)
+        now = datetime.datetime.now()
+        return self.exclude(confirmed=True).filter(content_type=ct, 
+                        object_pk=instance.pk, valid_until__gt=now).count()
 
 
 class DeferredAction(models.Model):
@@ -59,7 +66,7 @@ class DeferredAction(models.Model):
         if self.valid_until is None:
             return False
         now = datetime.datetime.now()
-        return self.valid_until - now <= datetime.timedelta(days=5) #FIXME: hardcoded
+        return self.valid_until < now
     is_expired.boolean = True
 
     

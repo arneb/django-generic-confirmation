@@ -52,8 +52,12 @@ class DeferredFormMixIn(object):
         # additionally, storing the original input is a bit safer, because 
         # this is only data which was transfered over http, so we won't 
         # get any pickle errors here
-        defer = DeferredAction.objects.create(form_class=form_class_name, 
-                        form_input=self.data, token=self._gen_token())
+        data = {'form_class':form_class_name, 'form_input':self.data, 
+                'token':self._gen_token(),}
+        valid_until = kwargs.pop('valid_until', None)
+        if valid_until is not None:
+            data.update({'valid_until': valid_until})
+        defer = DeferredAction.objects.create(**data)
 
         if self.instance is not None:
             # this extra step makes sure that ModelForms for editing and for
