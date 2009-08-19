@@ -7,7 +7,7 @@ from generic_confirmation.forms import ConfirmationForm
 
 def confirm_by_form(request, template_name='confirm.html', 
                     success_template_name='confirmed.html', 
-                    success_url=None, success_messages=None,
+                    success_url=None, success_message=None,
                     form_class=ConfirmationForm):
     """
     If ``success_url`` is not None a redirect to ``success_url`` will
@@ -21,7 +21,7 @@ def confirm_by_form(request, template_name='confirm.html',
     
     """
     if request.method == 'POST':
-        form = form_classs(request.POST)
+        form = form_class(request.POST)
         if form.is_valid():
             form.save()
             if success_url is None:
