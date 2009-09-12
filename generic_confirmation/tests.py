@@ -1,12 +1,16 @@
 # -*- coding: utf-8 -*-
 """Unit testing for django-generic-confirmation."""
 
+import datetime
 from django import forms
 from django.test import TestCase
+from django.test.client import Client
 from django.contrib.auth.models import User, Group
 from django.db import models
 from django.core import mail
+from django.core.urlresolvers import reverse
 from django.conf import settings
+from django.template import Template, Context, TemplateDoesNotExist
 from generic_confirmation.fields import PickledObjectField
 from generic_confirmation.forms import DeferredForm, ConfirmationForm
 from generic_confirmation.models import DeferredAction
@@ -126,7 +130,43 @@ class DeferFormTestCase(TestCase):
         user_obj = User.objects.get(username=self.user.username)
         self.assertEquals(user_obj.email, 'xxx@example.com')        
         
+    
+    def testConfirmBogus(self):
+        result = DeferredAction.objects.confirm('some-bogus-token-1')
+        self.assertEquals(result, False)
         
+    def testConfirmBogusViaForm(self):
+        confirm_form = ConfirmationForm({'token': 'some-bogus-token-2'})
+        self.assertFalse(confirm_form.is_valid())
+        
+        
+    def testCustomValidUntil(self):
+        # very similar to self.testEmailChange
+        form = EmailChangeForm({'email': 'xxx@example.com'}, instance=self.user)
+        self.assertTrue(form.is_valid())
+        
+        valid_date = datetime.datetime.now()+datetime.timedelta(hours=1)
+        defered = form.save(valid_until=valid_date)
+        
+        obj = DeferredAction.objects.get(token=defered)    
+        
+        # the token must be valid until ``valid_date``
+        self.assertEquals(obj.valid_until, valid_date)
+        
+        
+    def testConfirmExpired(self):
+        # similar to self.testCustomValidUntil
+        form = EmailChangeForm({'email': 'xxx@example.com'}, instance=self.user)
+        self.assertTrue(form.is_valid())
+        
+        valid_date = datetime.datetime.now() - datetime.timedelta(hours=1)
+        defered = form.save(valid_until=valid_date)
+        
+        result = DeferredAction.objects.confirm(defered)    
+        self.assertEquals(result, False)
+            
+        
+            
 class ManyToManyTestCase(TestCase):
     def setUp(self):
         self.user = User.objects.create_user('user3', 'user3@example.com', '123456')
@@ -245,9 +285,89 @@ class NotificationTestCase(TestCase):
         # make sure the right token is in the body of the message
         self.assertTrue(token in mail.outbox[0].body) 
         
+
+class TemplatetagTestCase(TestCase):
+    def setUp(self):
+        self.user5 = User.objects.create_user('user5', 'user5@example.com', '123456')
+        self.user6 = User.objects.create_user('user6', 'user6@example.com', '123456')    
+        self.user7 = User.objects.create_user('user7', 'user7@example.com', '123456')    
         
         
-# taken from djangosnippets.org/snippets/513 by obeattie        
+    def testHasPendingTokens(self):
+        # generate a Token
+        form = EmailChangeForm({'email': 'xxx@example.com'}, instance=self.user5)
+        self.assertTrue(form.is_valid())
+        defered = form.save()
+        #self.assertEquals(DeferredAction.objects.pending_for(self.user5), 1)
+        
+        t = Template("""{% load generic_confirmation_tags %}{% pending_confirmations object %}""")
+        html = t.render(Context({'object': self.user5}))
+        self.assertEquals(html, "1")
+        
+        
+    def testHasNoPendingTokens(self):        
+        t = Template("""{% load generic_confirmation_tags %}{% pending_confirmations object %}""")
+        html = t.render(Context({'object': self.user6}))
+        self.assertEquals(html, "0")
+        
+    def testHasAlreadyExpiredToken(self):
+        # generate a Token
+        form = EmailChangeForm({'email': 'xxx@example.com'}, instance=self.user7)
+        self.assertTrue(form.is_valid())
+        valid_date = datetime.datetime.now() - datetime.timedelta(hours=1)
+        defered = form.save(valid_until=valid_date)
+        #self.assertEquals(DeferredAction.objects.pending_for(self.user7), 0)
+        
+        t = Template("""{% load generic_confirmation_tags %}{% pending_confirmations object %}""")
+        html = t.render(Context({'object': self.user7}))
+        self.assertEquals(html, "0")
+
+
+class ViewTestCase(TestCase):
+    """
+    without bundled templates this does not make too much sense, but
+    at least we can have a better test-coverage buy running the parts and 
+    catching the proper exceptions.
+    
+    """
+    def setUp(self):
+        self.client = Client()
+        self.user8 = User.objects.create_user('user8', 'user8@example.com', '123456')
+        self.user9 = User.objects.create_user('user9', 'user9@example.com', '123456')
+        
+    def testBogusConfirmByGet(self):
+        # currently there is no bundled template
+        # should be fixed in a future version
+        self.assertRaises(TemplateDoesNotExist, self.client.get ,reverse('generic_confirmation_by_get', kwargs={'token': 'somebogustoken3'}))
+    
+    def testValidConfirmByGet(self):
+        form = EmailChangeForm({'email': 'xxx@example.com'}, instance=self.user8)
+        self.assertTrue(form.is_valid())
+        defered = form.save()
+        # currently there is no bundled template
+        # should be fixed in a future version
+        self.assertRaises(TemplateDoesNotExist, self.client.get ,reverse('generic_confirmation_by_get', kwargs={'token': defered}))
+    
+    def testConfirmByFormGET(self):
+        # currently there is no bundled template
+        # should be fixed in a future version
+        self.assertRaises(TemplateDoesNotExist, self.client.get ,reverse('generic_confirmation_by_form'))
+    
+    def testBogusConfirmByFormPOST(self):
+        # currently there is no bundled template
+        # should be fixed in a future version
+        self.assertRaises(TemplateDoesNotExist, self.client.post ,reverse('generic_confirmation_by_form'), {'token': 'some-bogus-token-4',})
+    
+    def testValidConfirmByFormPOST(self):
+        form = EmailChangeForm({'email': 'xxx@example.com'}, instance=self.user9)
+        self.assertTrue(form.is_valid())
+        defered = form.save()
+        # currently there is no bundled template
+        # should be fixed in a future version
+        self.assertRaises(TemplateDoesNotExist, self.client.post ,reverse('generic_confirmation_by_form'), {'token': defered,})
+
+        
+# taken (but modified) from djangosnippets.org/snippets/513 by obeattie        
         
 class TestingModel(models.Model):
 	pickle_field = PickledObjectField()
@@ -256,29 +376,39 @@ class TestCustomDataType(str):
 	pass
 
 class PickledObjectFieldTests(TestCase):
-	def setUp(self):
-		self.testing_data = (
-			{1:1, 2:4, 3:6, 4:8, 5:10},
-			'Hello World',
-			(1, 2, 3, 4, 5),
-			[1, 2, 3, 4, 5],
-			TestCustomDataType('Hello World'),
-		)
-		return super(PickledObjectFieldTests, self).setUp()
-	
-	def testDataIntegriry(self):
-		"""Tests that data remains the same when saved to and fetched from the database."""
-		for value in self.testing_data:
-			model_test = TestingModel(pickle_field=value)
-			model_test.save()
-			model_test = TestingModel.objects.get(id__exact=model_test.id)
-			self.assertEquals(value, model_test.pickle_field)
-			model_test.delete()
-	
-	def testLookups(self):
-		"""Tests that lookups can be performed on data once stored in the database."""
-		for value in self.testing_data:
-			model_test = TestingModel(pickle_field=value)
-			model_test.save()
-			self.assertEquals(value, TestingModel.objects.get(pickle_field__exact=value).pickle_field)
-			model_test.delete()
+    def setUp(self):
+        self.testing_data = (
+            {1:1, 2:4, 3:6, 4:8, 5:10},
+            'Hello World',
+            (1, 2, 3, 4, 5),
+            [1, 2, 3, 4, 5],
+            TestCustomDataType('Hello World'),
+        )
+        return super(PickledObjectFieldTests, self).setUp()
+
+    def testDataIntegriry(self):
+        """Tests that data remains the same when saved to and fetched from the database."""
+        for value in self.testing_data:
+            model_test = TestingModel(pickle_field=value)
+            model_test.save()
+            model_test = TestingModel.objects.get(id__exact=model_test.id)
+            self.assertEquals(value, model_test.pickle_field)
+            model_test.delete()
+
+    def testExactLookups(self):
+        """Tests that lookups can be performed on data once stored in the database."""
+        for value in self.testing_data:
+            model_test = TestingModel(pickle_field=value)
+            model_test.save()
+            self.assertEquals(value, TestingModel.objects.get(pickle_field__exact=value).pickle_field)
+            model_test.delete()
+
+    def testInLookups(self):
+        """Tests that lookups can be performed on data once stored in the database."""
+        for value in self.testing_data:
+            model_test = TestingModel(pickle_field=value)
+            model_test.save()
+            self.assertEquals(value, TestingModel.objects.filter(pickle_field__in=[value,])[0].pickle_field)
+            model_test.delete()
+
+        

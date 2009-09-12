@@ -1,5 +1,6 @@
 import datetime
 from django.db import models
+from django.db.models.query import Q
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.contenttypes import generic
 from generic_confirmation.fields import PickledObjectField
@@ -24,7 +25,8 @@ class ConfirmationManager(models.Manager):
         ct = ContentType.objects.get_for_model(instance)
         now = datetime.datetime.now()
         return self.exclude(confirmed=True).filter(content_type=ct, 
-                        object_pk=instance.pk, valid_until__gt=now).count()
+                object_pk=instance.pk).filter(
+                Q(valid_until__gt=now) | Q(valid_until__isnull=True)).count()
 
 
 class DeferredAction(models.Model):
