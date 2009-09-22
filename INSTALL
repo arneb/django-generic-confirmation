@@ -1,0 +1,16 @@
+===================================
+Install django-generic-confirmation
+===================================
+
+There are multiple ways to install django-generic-confirmation:
+
+If you are reading this file on your computer, you can run::
+
+    python setup.py install
+    
+If you haven't already downloaded the package you can use::
+
+    easy_install django-generic-confirmation
+    
+Of course it's also possible to put the ``generic_confirmation`` directory
+somewhere on your PYTHONPATH to use the app.
