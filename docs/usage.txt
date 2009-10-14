@@ -1,11 +1,15 @@
 .. _ref-generic-confirmation-usage:
 
-===========================
-django-generic-confirmation
-===========================
+=================================
+Using django-generic-confirmation
+=================================
 
 django-generic-confirmation tries to solve a few real use-cases I stumpled
 upon in different projects in a generic way. 
+
+
+Use-cases
+=========
 
 Use-cases include but are not limited to:
 
