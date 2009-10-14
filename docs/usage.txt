@@ -1,3 +1,5 @@
+.. _ref-generic-confirmation-usage:
+
 ===========================
 django-generic-confirmation
 ===========================
@@ -147,6 +149,7 @@ If you pass ``user=request.user`` to the form.save()-method, then the signal
 will provide a user argument pointing to the user who requested the change.
 It's also possible to pass another user to save method to inform an admin or so.
 
+::
 
     def send_notification(sender, instance, user, **kwargs):
         body = render_to_string('confirmation_mail.html', {'user': user, 'token': instance.token})
