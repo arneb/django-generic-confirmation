@@ -1,4 +1,5 @@
-# taken from djangosnippets.org/snippets/513 by obeattie
+import base64
+# taken and modified from djangosnippets.org/snippets/513 by obeattie
 from django.db import models
 
 try:
@@ -19,17 +20,17 @@ class PickledObjectField(models.Field):
 		if isinstance(value, PickledObject):
 			# If the value is a definite pickle; and an error is raised in de-pickling
 			# it should be allowed to propogate.
-			return pickle.loads(str(value))
+			return pickle.loads(str(base64.b64decode(value)))
 		else:
 			try:
-				return pickle.loads(str(value))
+				return pickle.loads(str(base64.b64decode(value)))
 			except:
 				# If an error was raised, just return the plain value
 				return value
 	
 	def get_db_prep_save(self, value):
 		if value is not None and not isinstance(value, PickledObject):
-			value = PickledObject(pickle.dumps(value))
+			value = base64.b64encode(PickledObject(pickle.dumps(value)))
 		return value
 	
 	def get_internal_type(self): 

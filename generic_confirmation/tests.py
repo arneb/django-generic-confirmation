@@ -383,6 +383,7 @@ class PickledObjectFieldTests(TestCase):
             (1, 2, 3, 4, 5),
             [1, 2, 3, 4, 5],
             TestCustomDataType('Hello World'),
+            unicode(u"\xf3"), # regression test for non-latin1 encodings in pickled data
         )
         return super(PickledObjectFieldTests, self).setUp()
 
@@ -411,4 +412,6 @@ class PickledObjectFieldTests(TestCase):
             self.assertEquals(value, TestingModel.objects.filter(pickle_field__in=[value,])[0].pickle_field)
             model_test.delete()
 
-        
+
+    
+    
