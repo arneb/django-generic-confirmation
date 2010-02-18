@@ -18,7 +18,7 @@ class DeferredFormMixIn(object):
     
     token_format = LONG
     
-    def _gen_token(self, format=None):
+    def _gen_token(self, format=None, step=0):
         """
         generates a unique (in terms of DeferredAction objects) token based
         on the format tuple in the form of (alphabet, length).
@@ -31,7 +31,9 @@ class DeferredFormMixIn(object):
             DeferredAction.objects.get(token=token)
         except DeferredAction.DoesNotExist:
             return token
-        return self._gen_token()
+        if step > 9:
+            raise Exception("10 attempts to generate a unique token failed.")
+        return self._gen_token(format=format, step=step+1)
 
     def save(self, user=None, **kwargs):
         """

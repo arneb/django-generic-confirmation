@@ -11,6 +11,7 @@ setup(
     packages=(
         'generic_confirmation',
         'generic_confirmation.templatetags',
+        'generic_confirmation.tests',
     ),
     classifiers=(
         'Development Status :: 4 - Beta',

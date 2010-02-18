@@ -17,6 +17,11 @@ from generic_confirmation.models import DeferredAction
 from generic_confirmation.main import LONG, SHORT, SHORT_UPPER
 from generic_confirmation import signals
 
+class TokenTestForm(DeferredForm):
+    token_format = ('a', 1)
+    class Meta:
+        model = User
+        fields = ('email',)
 
 class EmailChangeForm(DeferredForm):
         class Meta:
@@ -50,6 +55,22 @@ class EmailChangeWithMailForm(DeferredForm):
         model = User
         fields = ('email',)
 
+class TokenGeneratorTestCase(TestCase):
+    def setUp(self):
+        self.user1 = User.objects.create_user('userX', 'userX@example.com', '123456')
+        self.user2 = User.objects.create_user('userY', 'userY@example.com', '123456')
+        
+    def testCollision(self):
+        form1 = TokenTestForm({'email': 'xxx@example.com'}, instance=self.user1)
+        self.assertTrue(form1.is_valid())
+        defered1 = form1.save()
+        
+        form2 = TokenTestForm({'email': 'yyy@example.com'}, instance=self.user2)
+        self.assertTrue(form2.is_valid())
+        # the token format only allows one possible token, so the second attempt
+        # to generate one must fail because it's a not recoverable error for us
+        self.assertRaises(Exception, form2.save)
+        
 class DeferFormTestCase(TestCase):
     def setUp(self):
         self.user = User.objects.create_user('user1', 'user1@example.com', '123456')
@@ -330,6 +351,8 @@ class ViewTestCase(TestCase):
     catching the proper exceptions.
     
     """
+    urls = "generic_confirmation.tests.urls"
+    
     def setUp(self):
         self.client = Client()
         self.user8 = User.objects.create_user('user8', 'user8@example.com', '123456')
@@ -348,6 +371,35 @@ class ViewTestCase(TestCase):
         # should be fixed in a future version
         self.assertRaises(TemplateDoesNotExist, self.client.get ,reverse('generic_confirmation_by_get', kwargs={'token': defered}))
     
+    def testValidConfirmByGetWithCustomSuccessMessage(self):
+        form = EmailChangeForm({'email': 'xxx@example.com'}, instance=self.user8)
+        self.assertTrue(form.is_valid())
+        defered = form.save()
+        # currently there is no bundled template
+        # should be fixed in a future version
+        self.assertRaises(TemplateDoesNotExist, self.client.get ,reverse('generic_confirmation_by_get_with_message', kwargs={'token': defered}))
+
+    def testValidConfirmByGetWithCustomSuccessUrl(self):
+        form = EmailChangeForm({'email': 'xxx@example.com'}, instance=self.user8)
+        self.assertTrue(form.is_valid())
+        defered = form.save()
+        # currently there is no bundled template
+        # should be fixed in a future version
+        response = self.client.get(reverse('generic_confirmation_by_get_with_url', kwargs={'token': defered}))
+        self.assertEquals(response.status_code, 302)
+        self.assertEquals(response['Location'], 'http://testserver/success/')
+
+    def testValidConfirmByGetWithCustomSuccessUrlAndMessage(self):
+        form = EmailChangeForm({'email': 'xxx@example.com'}, instance=self.user8)
+        self.assertTrue(form.is_valid())
+        defered = form.save()
+        # currently there is no bundled template
+        # should be fixed in a future version
+        response = self.client.get(reverse('generic_confirmation_by_get_with_url_and_message', kwargs={'token': defered}))
+        self.assertEquals(response.status_code, 302)
+        self.assertEquals(response['Location'], 'http://testserver/success/')
+
+        
     def testConfirmByFormGET(self):
         # currently there is no bundled template
         # should be fixed in a future version
@@ -365,6 +417,34 @@ class ViewTestCase(TestCase):
         # currently there is no bundled template
         # should be fixed in a future version
         self.assertRaises(TemplateDoesNotExist, self.client.post ,reverse('generic_confirmation_by_form'), {'token': defered,})
+
+    def testValidConfirmByFormPOSTWithCustomSuccessMessage(self):
+        form = EmailChangeForm({'email': 'xxx@example.com'}, instance=self.user9)
+        self.assertTrue(form.is_valid())
+        defered = form.save()
+        # currently there is no bundled template
+        # should be fixed in a future version
+        self.assertRaises(TemplateDoesNotExist, self.client.post ,reverse('generic_confirmation_by_form_with_message'), {'token': defered})
+
+    def testValidConfirmByFormPOSTWithCustomSuccessUrl(self):
+        form = EmailChangeForm({'email': 'xxx@example.com'}, instance=self.user9)
+        self.assertTrue(form.is_valid())
+        defered = form.save()
+        # currently there is no bundled template
+        # should be fixed in a future version
+        response = self.client.post(reverse('generic_confirmation_by_form_with_url'), {'token': defered})
+        self.assertEquals(response.status_code, 302)
+        self.assertEquals(response['Location'], 'http://testserver/success/')
+
+    def testValidConfirmByFormPOSTWithCustomSuccessUrlAndMessage(self):
+        form = EmailChangeForm({'email': 'xxx@example.com'}, instance=self.user9)
+        self.assertTrue(form.is_valid())
+        defered = form.save()
+        # currently there is no bundled template
+        # should be fixed in a future version
+        response = self.client.post(reverse('generic_confirmation_by_form_with_url_and_message'), {'token': defered})
+        self.assertEquals(response.status_code, 302)
+        self.assertEquals(response['Location'], 'http://testserver/success/')
 
         
 # taken (but modified) from djangosnippets.org/snippets/513 by obeattie        
@@ -412,6 +492,13 @@ class PickledObjectFieldTests(TestCase):
             self.assertEquals(value, TestingModel.objects.filter(pickle_field__in=[value,])[0].pickle_field)
             model_test.delete()
 
+    def testBogusLookup(self):
+        """Tests that bogus lookups raise an TypeError."""
+        for value in self.testing_data:
+            model_test = TestingModel(pickle_field=value)
+            model_test.save()
+            self.assertRaises(TypeError, TestingModel.objects.filter, pickle_field__contains=[value,])
+            model_test.delete()
+            
 
-    
     

@@ -29,7 +29,7 @@ def confirm_by_form(request, template_name='confirm.html',
                     {'success_message': success_message}, 
                     context_instance=RequestContext(request))
             else:
-                if success_message is not None:
+                if success_message is not None and request.user.is_authenticated():
                     request.user.message_set.create(message=success_message)
                 return HttpResponseRedirect(success_url)
     else:
@@ -51,7 +51,7 @@ def confirm_by_get(request, token, template_name='confirm.html',
                     {'success_message': success_message}, 
                     context_instance=RequestContext(request))
         else:
-            if success_message is not None:
+            if success_message is not None and request.user.is_authenticated():
                 request.user.message_set.create(message=success_message)
             return HttpResponseRedirect(success_url)
     else:
