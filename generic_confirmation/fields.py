@@ -1,5 +1,5 @@
 import base64
-# taken and modified from djangosnippets.org/snippets/513 by obeattie
+# based on djangosnippets.org/snippets/513 by obeattie
 from django.db import models
 
 try:
@@ -28,20 +28,18 @@ class PickledObjectField(models.Field):
 				# If an error was raised, just return the plain value
 				return value
 	
-	def get_db_prep_save(self, value):
+	def get_prep_value(self, value):
 		if value is not None and not isinstance(value, PickledObject):
 			value = base64.b64encode(PickledObject(pickle.dumps(value)))
 		return value
 	
 	def get_internal_type(self): 
 		return 'TextField'
-	
-	def get_db_prep_lookup(self, lookup_type, value):
+
+	def get_prep_lookup(self, lookup_type, value):
 		if lookup_type == 'exact':
-			value = self.get_db_prep_save(value)
-			return super(PickledObjectField, self).get_db_prep_lookup(lookup_type, value)
+			return self.get_prep_value(value)
 		elif lookup_type == 'in':
-			value = [self.get_db_prep_save(v) for v in value]
-			return super(PickledObjectField, self).get_db_prep_lookup(lookup_type, value)
+			return [self.get_prep_value(v) for v in value]
 		else:
 			raise TypeError('Lookup type %s is not supported.' % lookup_type)
