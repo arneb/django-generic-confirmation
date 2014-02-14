@@ -1,5 +1,5 @@
 include AUTHORS
 include LICENSE
 include INSTALL
-include README
+include README.rst
 include docs/*

@@ -6,8 +6,7 @@ setup(
     description='Deferred forms for the Django webframework',
     author='Arne Brodowski',
     author_email='mail@arnebrodowski.de',
-    url='http://code.google.com/p/django-generic-confirmation/',
-    download_url='http://code.google.com/p/django-generic-confirmation/downloads/list',
+    url='https://github.com/arneb/django-generic-confirmation/',
     packages=(
         'generic_confirmation',
         'generic_confirmation.templatetags',
