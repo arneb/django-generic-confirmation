@@ -11,4 +11,5 @@ user) before saving the new email address to the database.
 
 The core of django-generic-confirmation is fully unit-tested and the app is in
 use at a few real-world projects confirming email addresses and mobile phone
-numbers. Feel free to read about the usage in `docs/usage.txt`.
+numbers. Feel free to read about the usage in `docs/usage.txt` or on
+http://django-generic-confirmation.readthedocs.org.
