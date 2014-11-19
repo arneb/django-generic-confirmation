@@ -1,4 +1,4 @@
-from django.conf.urls.defaults import *
+from django.conf.urls import patterns, include, url
 
 urlpatterns = patterns('generic_confirmation.views',
     url(r'^$', 'confirm_by_form', {}, name="generic_confirmation_by_form"),
