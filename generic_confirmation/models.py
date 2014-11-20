@@ -43,7 +43,7 @@ class DeferredAction(models.Model):
 
     objects = ConfirmationManager()
 
-    def resume_form_save(self):
+    def resume_form_save(self, commit=True):
         form_class_name = self.form_class
         dot_index = form_class_name.rindex('.')
         module = form_class_name[:dot_index]
@@ -59,8 +59,9 @@ class DeferredAction(models.Model):
         if not form.is_valid():
             raise Exception("the defered form was not cleaned properly before saving")
 
-        obj = form.save_original()
-        obj.save()
+        obj = form.save_original(commit=commit)
+        if commit:
+            obj.save()
         return obj
 
 
