@@ -36,6 +36,7 @@ class DeferredAction(models.Model):
 
     form_class = models.CharField(max_length=255)
     form_input = PickledObjectField(editable=False)
+    form_prefix = models.CharField(max_length=255, blank=True, null=True)
 
     content_type = models.ForeignKey(ContentType, null=True)
     object_pk = models.TextField(null=True)
@@ -43,7 +44,7 @@ class DeferredAction(models.Model):
 
     objects = ConfirmationManager()
 
-    def resume_form_save(self, commit=True):
+    def get_resume_form(self):
         form_class_name = self.form_class
         dot_index = form_class_name.rindex('.')
         module = form_class_name[:dot_index]
@@ -54,16 +55,23 @@ class DeferredAction(models.Model):
         if self.instance_object is None:
             form = form_class(self.form_input)
         else:
-            form = form_class(self.form_input, instance=self.instance_object)
+            form = form_class(
+                self.form_input, instance=self.instance_object,
+                prefix=self.form_prefix)
+
+        return form
+
+    def resume_form_save(self, commit=True):
+        form = self.get_resume_form()
 
         if not form.is_valid():
-            raise Exception("the defered form was not cleaned properly before saving")
+            raise Exception(
+                "the defered form was not cleaned properly before saving")
 
         obj = form.save_original(commit=commit)
         if commit:
             obj.save()
         return obj
-
 
     def is_expired(self):
         if self.valid_until is None:

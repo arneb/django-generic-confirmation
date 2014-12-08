@@ -500,3 +500,49 @@ class PickledObjectFieldTests(TestCase):
             model_test.save()
             self.assertRaises(TypeError, TestingModel.objects.filter, pickle_field__contains=[value,])
             model_test.delete()
+
+
+class TestingModelForm(DeferredForm):
+    class Meta:
+        model = TestingModel
+
+
+class FormPrefixTests(TestCase):
+    def testFormPrefix(self):
+        ''' Testing the situation when deferred form has
+        prefix. Prefixes also should be saved, otherwise
+        form_input will not be accepted when save operation
+        will be resumed'''
+
+        PREFIX = 'test_prefix'
+
+        model = TestingModel.objects.create(pickle_field='none')
+
+        model_form = TestingModelForm(instance=model, prefix=PREFIX)
+
+        data = {f.html_name: str(f.value() + '-changed') for f in model_form}
+
+        unprefixed_form = TestingModelForm(data, instance=model)
+        self.assertFalse(unprefixed_form.is_valid())
+
+        model_form = TestingModelForm(data, instance=model, prefix=PREFIX)
+        self.assertTrue(model_form.is_valid())
+        self.assertTrue(model_form.has_changed())
+
+        token = model_form.save()
+
+        form = ConfirmationForm({'token': token})
+        self.assertTrue(form.is_valid())
+        action = DeferredAction.objects.get(token=token)
+
+        resume_form = action.get_resume_form()
+
+        self.assertEqual(
+            resume_form.prefix, model_form.prefix,
+            msg="Resume form has to have the same prefix as initial form")
+
+        model = TestingModel.objects.get(pk=model.pk)
+        self.assertEqual(model.pickle_field, 'none')
+        form.save()
+        model = TestingModel.objects.get(pk=model.pk)
+        self.assertEqual(model.pickle_field, 'none-changed')
