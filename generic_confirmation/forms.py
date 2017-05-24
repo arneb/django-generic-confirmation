@@ -34,12 +34,19 @@ class DeferredFormMixIn(object):
             raise Exception("10 attempts to generate a unique token failed.")
         return self._gen_token(format=format, step=step+1)
 
-    def save(self, user=None, **kwargs):
+    def save(self, user=None, valid_until=None, description=None, **kwargs):
         """
-        replaces the ModelForm save method with our own to defer the action
+        Replaces the ModelForm save method with our own to defer the action
         by storing the data in the db.
         Returns a unique token which is needed to confirm the action and
         resume it.
+
+        Parameters:
+
+        * user (User object): the user requesting the change
+        * valid_until (datetime): until when the action can be confirmed
+        * description (string): saved with the action object
+
         """
         if not self.is_valid():
             raise Exception("only call save() on a form after calling is_valid().")
@@ -54,10 +61,10 @@ class DeferredFormMixIn(object):
         # this is only data which was transfered over http, so we won't
         # get any pickle errors here
         data = {'form_class':form_class_name, 'form_input':self.data,
-                'token':self._gen_token(), 'form_prefix': self.prefix}
-        valid_until = kwargs.pop('valid_until', None)
-        if valid_until is not None:
-            data.update({'valid_until': valid_until})
+                'token':self._gen_token(), 'form_prefix': self.prefix,
+                'valid_until': valid_until, 'description': description,
+                'user': user}
+
         defer = DeferredAction.objects.create(**data)
 
         if self.instance is not None:
@@ -87,7 +94,9 @@ class DeferredForm(DeferredFormMixIn, forms.ModelForm):
     Inherit from this form to get a ModelForm which will
     automatically defer it's save method until the action
     is confirmed.
+
     """
+    pass
 
 
 class ConfirmationForm(forms.Form):

@@ -1,9 +1,11 @@
+from django.conf import settings
 from django.utils import timezone
 from django.db import models
 from django.db.models.query import Q
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.contenttypes.fields import GenericForeignKey
 from generic_confirmation.fields import PickledObjectField
+from generic_confirmation import signals
 
 
 class ConfirmationManager(models.Manager):
@@ -16,7 +18,9 @@ class ConfirmationManager(models.Manager):
         if not action.is_expired():
             obj = action.resume_form_save()
             action.confirmed = True
-            action.save() # FIXME: should we delete() here?
+            action.save()  # FIXME: should we also call delete() here?
+            # inform everyone else, that a change was confirmed
+            signals.change_confirmed.send(sender=obj._meta.model, instance=action)
             return obj
 
         return False
@@ -41,6 +45,9 @@ class DeferredAction(models.Model):
     content_type = models.ForeignKey(ContentType, null=True)
     object_pk = models.TextField(null=True)
     instance_object = GenericForeignKey('content_type', 'object_pk')
+
+    description = models.TextField(blank=True, null=True)
+    user = models.ForeignKey(getattr(settings, 'AUTH_USER_MODEL', 'auth.User'), blank=True, null=True)
 
     objects = ConfirmationManager()
 

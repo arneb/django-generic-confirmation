@@ -199,6 +199,29 @@ class DeferFormTestCase(TestCase):
         result = DeferredAction.objects.confirm(defered)
         self.assertEquals(result, False)
 
+    def testSaveDescription(self):
+        test_description = "This is a Test Description %s" % 'user2@example.com'
+
+        form = UserCreateForm({'username': 'user2', 'email': 'user2@example.com', 'password': '123456'})
+        self.assertTrue(form.is_valid())
+        defered = form.save(description=test_description)
+
+        # at this point the object must not exist.
+        self.assertRaises(User.DoesNotExist, User.objects.get, username='user2')
+
+        action = DeferredAction.objects.get(token=defered)
+        self.assertEquals(action.description, test_description)
+
+    def testSaveUser(self):
+        form = UserCreateForm({'username': 'user2', 'email': 'user2@example.com', 'password': '123456'})
+        self.assertTrue(form.is_valid())
+        defered = form.save(user=self.user)
+
+        # at this point the object must not exist.
+        self.assertRaises(User.DoesNotExist, User.objects.get, username='user2')
+
+        action = DeferredAction.objects.get(token=defered)
+        self.assertEquals(action.user, self.user)
 
 
 class ManyToManyTestCase(TestCase):
@@ -305,6 +328,22 @@ class SignalTestCase(TestCase):
         self.assertTrue(form.is_valid())
         defered = form.save()
         self.assertEquals(len(defered), SHORT[1])
+
+    def testChangeConfirmedSignal(self):
+        def dummy_listener(sender, instance, testcase=self, **kwargs):
+            """ a signal receiver which does some tests """
+            testcase.assertEquals(instance.__class__, DeferredAction)
+            testcase.assertEquals(sender, User)
+
+        signals.change_confirmed.connect(dummy_listener)
+
+        form = EmailChangeForm({'email': 'xxx@example.com'}, instance=self.user)
+        self.assertTrue(form.is_valid())
+        defered = form.save(self.user)
+        self.assertEquals(len(defered), LONG[1])
+
+        self.assertTrue(bool(DeferredAction.objects.confirm(defered)))
+
 
 class NotificationTestCase(TestCase):
     def setUp(self):
