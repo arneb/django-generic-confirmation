@@ -11,6 +11,7 @@ setup(
         'generic_confirmation',
         'generic_confirmation.templatetags',
         'generic_confirmation.tests',
+        'generic_confirmation.migrations',
     ),
     classifiers=(
         'Development Status :: 5 - Production/Stable',
