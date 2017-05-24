@@ -2,4 +2,6 @@ include AUTHORS
 include LICENSE
 include INSTALL
 include README.rst
+include tox.ini
 include docs/*
+include tests/*.py
