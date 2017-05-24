@@ -35,7 +35,7 @@ class PickledObjectField(models.Field):
 
     def get_prep_value(self, value):
         if value is not None and not isinstance(value, PickledObject):
-            value = base64.b64encode(PickledObject(pickle.dumps(value)))
+            value = base64.b64encode(PickledObject(pickle.dumps(value))).decode()
         return value
 
     def get_internal_type(self):

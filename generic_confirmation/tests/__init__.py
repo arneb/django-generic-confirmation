@@ -13,6 +13,7 @@ from django.core import mail
 from django.core.urlresolvers import reverse
 from django.conf import settings
 from django.template import Template, Context, TemplateDoesNotExist
+from django.http.request import QueryDict
 from generic_confirmation.fields import PickledObjectField
 from generic_confirmation.forms import DeferredForm, ConfirmationForm
 from generic_confirmation.models import DeferredAction
@@ -474,11 +475,12 @@ class PickledObjectFieldTests(TestCase):
             (1, 2, 3, 4, 5),
             [1, 2, 3, 4, 5],
             TestCustomDataType('Hello World'),
-            _u(u"\xf3"), # regression test for non-latin1 encodings in pickled data
+            _u(u"\xf3"),  # regression test for non-latin1 encodings in pickled data
+            QueryDict("email=test@example.com&test=1&test=2"),  # mostly used datatype
         )
         return super(PickledObjectFieldTests, self).setUp()
 
-    def testDataIntegriry(self):
+    def testDataIntegrity(self):
         """Tests that data remains the same when saved to and fetched from the database."""
         for value in self.testing_data:
             model_test = TestingModel(pickle_field=value)

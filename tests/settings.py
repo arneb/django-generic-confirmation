@@ -1,4 +1,5 @@
 import os.path
+from django import VERSION
 
 INSTALLED_APPS = (
     'django.contrib.admin',
@@ -52,3 +53,22 @@ TEMPLATES = [
         },
     },
 ]
+
+
+# prevent migrations from running during tests, because test models have none
+if VERSION < (1,9):
+    MIGRATION_MODULES = {
+        'auth': 'tests.migrations.auth',
+        'contenttypes': 'tests.migrations.contenttypes',
+        'admin': 'tests.migrations.admin',
+        'sessions': 'tests.migrations.sessions',
+        'generic_confirmation': 'tests.migrations.generic_confirmation',
+    }
+else:
+    MIGRATION_MODULES = {
+        'auth': None,
+        'contenttypes': None,
+        'admin': None,
+        'sessions': None,
+        'generic_confirmation': None,
+    }
