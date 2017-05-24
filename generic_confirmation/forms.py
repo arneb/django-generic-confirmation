@@ -6,7 +6,6 @@ from generic_confirmation.main import LONG
 from generic_confirmation import signals
 
 
-
 class DeferredFormMixIn(object):
     """
     This is a MixIn class, so that you can also build deferred forms

@@ -4,7 +4,6 @@ from django.http import HttpResponseRedirect
 from generic_confirmation.forms import ConfirmationForm
 
 
-
 def confirm_by_form(request, template_name='confirm.html',
                     success_template_name='confirmed.html',
                     success_url=None, success_message=None,
