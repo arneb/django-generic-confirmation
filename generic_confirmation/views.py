@@ -1,6 +1,7 @@
 from django.shortcuts import render
 from django.template import RequestContext
 from django.http import HttpResponseRedirect
+from django.contrib import messages
 from generic_confirmation.forms import ConfirmationForm
 
 
@@ -28,7 +29,7 @@ def confirm_by_form(request, template_name='confirm.html',
                     {'success_message': success_message})
             else:
                 if success_message is not None and request.user.is_authenticated():
-                    request.user.message_set.create(message=success_message)
+                    messages.add_message(request, messages.SUCCESS, success_message)
                 return HttpResponseRedirect(success_url)
     else:
         form = form_class()
@@ -48,7 +49,7 @@ def confirm_by_get(request, token, template_name='confirm.html',
                     {'success_message': success_message})
         else:
             if success_message is not None and request.user.is_authenticated():
-                request.user.message_set.create(message=success_message)
+                messages.add_message(request, messages.SUCCESS, success_message)
             return HttpResponseRedirect(success_url)
     else:
         return render(request, template_name, {})
