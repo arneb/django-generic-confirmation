@@ -1,6 +1,7 @@
-from django.conf.urls import patterns, include, url
+from django.conf.urls import url, include
+from generic_confirmation import views
 
-urlpatterns = patterns('generic_confirmation.views',
-    url(r'^$', 'confirm_by_form', {}, name="generic_confirmation_by_form"),
-    url(r'^(?P<token>\w+)$', 'confirm_by_get', {}, name="generic_confirmation_by_get"),
-)
+urlpatterns = [
+    url(r'^$', views.confirm_by_form, {}, name="generic_confirmation_by_form"),
+    url(r'^(?P<token>\w+)$', views.confirm_by_get, {}, name="generic_confirmation_by_get"),
+]

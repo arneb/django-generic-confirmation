@@ -2,9 +2,10 @@
 """Unit testing for django-generic-confirmation."""
 
 import time
+from django import VERSION
 from django import forms
 from django.utils import timezone
-from django.test import TestCase
+from django.test import TestCase, override_settings
 from django.test.client import Client
 from django.contrib.auth.models import User, Group
 from django.db import models
@@ -17,6 +18,16 @@ from generic_confirmation.forms import DeferredForm, ConfirmationForm
 from generic_confirmation.models import DeferredAction
 from generic_confirmation.main import LONG, SHORT, SHORT_UPPER
 from generic_confirmation import signals
+
+if VERSION < (1, 9):
+    TEST_SERVER_PREFIX = "http://testserver"
+else:
+    TEST_SERVER_PREFIX = ""
+
+try:
+    _u = unicode
+except NameError:
+    _u = str
 
 class TokenTestForm(DeferredForm):
     token_format = ('a', 1)
@@ -345,6 +356,7 @@ class TemplatetagTestCase(TestCase):
         self.assertEquals(html, "0")
 
 
+@override_settings(ROOT_URLCONF="generic_confirmation.tests.urls")
 class ViewTestCase(TestCase):
     """
     without bundled templates this does not make too much sense, but
@@ -352,8 +364,6 @@ class ViewTestCase(TestCase):
     catching the proper exceptions.
 
     """
-    urls = "generic_confirmation.tests.urls"
-
     def setUp(self):
         self.client = Client()
         self.user8 = User.objects.create_user('user8', 'user8@example.com', '123456')
@@ -388,7 +398,7 @@ class ViewTestCase(TestCase):
         # should be fixed in a future version
         response = self.client.get(reverse('generic_confirmation_by_get_with_url', kwargs={'token': defered}))
         self.assertEquals(response.status_code, 302)
-        self.assertEquals(response['Location'], 'http://testserver/success/')
+        self.assertEquals(response['Location'], TEST_SERVER_PREFIX + '/success/')
 
     def testValidConfirmByGetWithCustomSuccessUrlAndMessage(self):
         form = EmailChangeForm({'email': 'xxx@example.com'}, instance=self.user8)
@@ -398,7 +408,7 @@ class ViewTestCase(TestCase):
         # should be fixed in a future version
         response = self.client.get(reverse('generic_confirmation_by_get_with_url_and_message', kwargs={'token': defered}))
         self.assertEquals(response.status_code, 302)
-        self.assertEquals(response['Location'], 'http://testserver/success/')
+        self.assertEquals(response['Location'], TEST_SERVER_PREFIX + '/success/')
 
 
     def testConfirmByFormGET(self):
@@ -435,7 +445,7 @@ class ViewTestCase(TestCase):
         # should be fixed in a future version
         response = self.client.post(reverse('generic_confirmation_by_form_with_url'), {'token': defered})
         self.assertEquals(response.status_code, 302)
-        self.assertEquals(response['Location'], 'http://testserver/success/')
+        self.assertEquals(response['Location'], TEST_SERVER_PREFIX + '/success/')
 
     def testValidConfirmByFormPOSTWithCustomSuccessUrlAndMessage(self):
         form = EmailChangeForm({'email': 'xxx@example.com'}, instance=self.user9)
@@ -445,7 +455,7 @@ class ViewTestCase(TestCase):
         # should be fixed in a future version
         response = self.client.post(reverse('generic_confirmation_by_form_with_url_and_message'), {'token': defered})
         self.assertEquals(response.status_code, 302)
-        self.assertEquals(response['Location'], 'http://testserver/success/')
+        self.assertEquals(response['Location'], TEST_SERVER_PREFIX + '/success/')
 
 
 # taken (but modified) from djangosnippets.org/snippets/513 by obeattie
@@ -464,7 +474,7 @@ class PickledObjectFieldTests(TestCase):
             (1, 2, 3, 4, 5),
             [1, 2, 3, 4, 5],
             TestCustomDataType('Hello World'),
-            unicode(u"\xf3"), # regression test for non-latin1 encodings in pickled data
+            _u(u"\xf3"), # regression test for non-latin1 encodings in pickled data
         )
         return super(PickledObjectFieldTests, self).setUp()
 
@@ -505,15 +515,17 @@ class PickledObjectFieldTests(TestCase):
 class TestingModelForm(DeferredForm):
     class Meta:
         model = TestingModel
+        exclude = ()
 
 
 class FormPrefixTests(TestCase):
     def testFormPrefix(self):
-        ''' Testing the situation when deferred form has
-        prefix. Prefixes also should be saved, otherwise
-        form_input will not be accepted when save operation
-        will be resumed'''
+        """
+        Testing the situation when deferred form has prefix. Prefixes also
+        should be saved, otherwise form_input will not be accepted when
+        save operation will be resumed.
 
+        """
         PREFIX = 'test_prefix'
 
         model = TestingModel.objects.create(pickle_field='none')
