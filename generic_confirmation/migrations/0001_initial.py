@@ -23,7 +23,7 @@ class Migration(migrations.Migration):
                 ('form_input', generic_confirmation.fields.PickledObjectField(editable=False)),
                 ('form_prefix', models.CharField(max_length=255, null=True, blank=True)),
                 ('object_pk', models.TextField(null=True)),
-                ('content_type', models.ForeignKey(to='contenttypes.ContentType', null=True)),
+                ('content_type', models.ForeignKey(to='contenttypes.ContentType', null=True, on_delete=models.SET_NULL)),
             ],
             options={
             },
