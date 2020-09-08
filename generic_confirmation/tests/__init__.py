@@ -10,7 +10,10 @@ from django.test.client import Client
 from django.contrib.auth.models import User, Group
 from django.db import models
 from django.core import mail
-from django.core.urlresolvers import reverse
+try:
+    from django.core.urlresolvers import reverse
+except ImportError:
+    from django.urls import reverse
 from django.conf import settings
 from django.template import Template, Context, TemplateDoesNotExist
 from django.http.request import QueryDict

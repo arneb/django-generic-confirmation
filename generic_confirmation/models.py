@@ -42,12 +42,12 @@ class DeferredAction(models.Model):
     form_input = PickledObjectField(editable=False)
     form_prefix = models.CharField(max_length=255, blank=True, null=True)
 
-    content_type = models.ForeignKey(ContentType, null=True)
+    content_type = models.ForeignKey(ContentType, null=True, on_delete=models.CASCADE)
     object_pk = models.TextField(null=True)
     instance_object = GenericForeignKey('content_type', 'object_pk')
 
     description = models.TextField(blank=True, null=True)
-    user = models.ForeignKey(getattr(settings, 'AUTH_USER_MODEL', 'auth.User'), blank=True, null=True)
+    user = models.ForeignKey(getattr(settings, 'AUTH_USER_MODEL', 'auth.User'), blank=True, null=True, on_delete=models.CASCADE)
 
     objects = ConfirmationManager()
 

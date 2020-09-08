@@ -5,6 +5,13 @@ from django.contrib import messages
 from generic_confirmation.forms import ConfirmationForm
 
 
+def _compat_is_authenticated(user):
+    if callable(user.is_authenticated):
+        return user.is_authenticated()
+    else:
+        return user.is_authenticated
+
+
 def confirm_by_form(request, template_name='confirm.html',
                     success_template_name='confirmed.html',
                     success_url=None, success_message=None,
@@ -28,7 +35,7 @@ def confirm_by_form(request, template_name='confirm.html',
                 return render(request, success_template_name,
                     {'success_message': success_message})
             else:
-                if success_message is not None and request.user.is_authenticated():
+                if success_message is not None and _compat_is_authenticated(request.user):
                     messages.add_message(request, messages.SUCCESS, success_message)
                 return HttpResponseRedirect(success_url)
     else:
@@ -48,7 +55,7 @@ def confirm_by_get(request, token, template_name='confirm.html',
             return render(request, success_template_name,
                     {'success_message': success_message})
         else:
-            if success_message is not None and request.user.is_authenticated():
+            if success_message is not None and _compat_is_authenticated(request.user):
                 messages.add_message(request, messages.SUCCESS, success_message)
             return HttpResponseRedirect(success_url)
     else:
