@@ -15,3 +15,7 @@ numbers. Feel free to read about the usage in `docs/usage.txt` or on
 http://django-generic-confirmation.readthedocs.org.
 
 django-generic-confirmation 0.4.x is compatible with Django 1.8 - 1.11.
+
+## Run tests
+
+    $ python tests/manage.py test generic_confirmation.tests --settings=settings
