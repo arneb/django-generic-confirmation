@@ -1,0 +1,16 @@
+asgiref==3.5.2
+distlib==0.3.4
+Django==3.2.12
+-e git+https://github.com/sailoboats/django-generic-confirmation@3536acf3c14a484b85550511455d0615d7aa418a#egg=django_generic_confirmation
+filelock==3.7.0
+packaging==21.3
+platformdirs==2.5.2
+pluggy==1.0.0
+py==1.11.0
+pyparsing==3.0.9
+pytz==2022.1
+six==1.16.0
+sqlparse==0.4.2
+toml==0.10.2
+tox==3.25.0
+virtualenv==20.14.1
