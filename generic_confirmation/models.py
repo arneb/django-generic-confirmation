@@ -28,9 +28,13 @@ class ConfirmationManager(models.Manager):
     def pending_for(self, instance):
         ct = ContentType.objects.get_for_model(instance)
         now = timezone.now()
-        return self.exclude(confirmed=True).filter(content_type=ct,
-                object_pk=instance.pk).filter(
-                Q(valid_until__gt=now) | Q(valid_until__isnull=True)).count()
+        return (
+            self
+            .exclude(confirmed=True)
+            .filter(content_type=ct, object_pk=instance.pk)
+            .filter(Q(valid_until__gt=now) | Q(valid_until__isnull=True))
+            .count()
+        )
 
 
 class DeferredAction(models.Model):

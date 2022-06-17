@@ -6,7 +6,7 @@ Django-generic-confirmation makes it easy for developers to add forms to a
 webapplication where the submitted data should only be used after an out-of-band
 confirmation was done. For example if a user wants to change his email address,
 generic-confirmation will make it really easy for the developer to add an
-out-of-band confirmation process (sending an email with a random link to the 
+out-of-band confirmation process (sending an email with a random link to the
 user) before saving the new email address to the database.
 
 The core of django-generic-confirmation is fully unit-tested and the app is in
@@ -15,3 +15,4 @@ numbers. Feel free to read about the usage in `docs/usage.txt` or on
 http://django-generic-confirmation.readthedocs.org.
 
 django-generic-confirmation 0.4.x is compatible with Django 1.8 - 1.11.
+django-generic-confirmation 0.5.x is compatible with Django 2.2 - 3.2.

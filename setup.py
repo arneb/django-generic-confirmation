@@ -7,13 +7,13 @@ setup(
     author='Arne Brodowski',
     author_email='mail@arnebrodowski.de',
     url='https://github.com/arneb/django-generic-confirmation/',
-    packages=(
+    packages=[
         'generic_confirmation',
         'generic_confirmation.templatetags',
         'generic_confirmation.tests',
         'generic_confirmation.migrations',
-    ),
-    classifiers=(
+    ],
+    classifiers=[
         'Development Status :: 5 - Production/Stable',
         'Environment :: Web Environment',
         'Intended Audience :: Developers',
@@ -22,5 +22,5 @@ setup(
         'Programming Language :: Python',
         'Topic :: Utilities',
         'Framework :: Django',
-    ),
+    ],
 )

@@ -5,13 +5,6 @@ from django.contrib import messages
 from generic_confirmation.forms import ConfirmationForm
 
 
-def _compat_is_authenticated(user):
-    if callable(user.is_authenticated):
-        return user.is_authenticated()
-    else:
-        return user.is_authenticated
-
-
 def confirm_by_form(request, template_name='confirm.html',
                     success_template_name='confirmed.html',
                     success_url=None, success_message=None,
@@ -32,16 +25,14 @@ def confirm_by_form(request, template_name='confirm.html',
         if form.is_valid():
             form.save()
             if success_url is None:
-                return render(request, success_template_name,
-                    {'success_message': success_message})
+                return render(request, success_template_name, {'success_message': success_message})
             else:
-                if success_message is not None and _compat_is_authenticated(request.user):
+                if success_message is not None and request.user.is_authenticated:
                     messages.add_message(request, messages.SUCCESS, success_message)
                 return HttpResponseRedirect(success_url)
     else:
         form = form_class()
     return render(request, template_name, {'form': form})
-
 
 
 def confirm_by_get(request, token, template_name='confirm.html',
@@ -52,10 +43,9 @@ def confirm_by_get(request, token, template_name='confirm.html',
     if form.is_valid():
         form.save()
         if success_url is None:
-            return render(request, success_template_name,
-                    {'success_message': success_message})
+            return render(request, success_template_name, {'success_message': success_message})
         else:
-            if success_message is not None and _compat_is_authenticated(request.user):
+            if success_message is not None and request.user.is_authenticated:
                 messages.add_message(request, messages.SUCCESS, success_message)
             return HttpResponseRedirect(success_url)
     else:

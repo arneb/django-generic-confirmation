@@ -88,14 +88,14 @@ a edit-and-confirm workflow.
                 form.save()
                 # redirect user and display a message explaining how to
                 # confirm the change
-                # request.user.message_set.create(message=u"...")
+                # request.user.message_set.create(message="...")
                 # return HttpResponseRedirect(...)
                 # _or_
                 # send user to a page which explains the confirmation process
-                return render_to_response(...)
+                return render(...)
         else:
             form = EmailChangeForm()
-        return render_to_response(...)
+        return render(...)
 
 
 the magic happens in the form, which should be inherited from
@@ -142,9 +142,9 @@ is fired and it's your task to listen for it and take the appropriate action.
 
     def send_notification(sender, instance, **kwargs):
             """ a signal receiver which does some tests """
-            print sender # the class which is edited
-            print instance # the DeferredAction
-            print instance.token # needed to confirm the action
+            print(sender) # the class which is edited
+            print(instance) # the DeferredAction
+            print(instance.token) # needed to confirm the action
 
 
     signals.confirmation_required.connect(send_notification)
