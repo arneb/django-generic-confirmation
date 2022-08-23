@@ -16,13 +16,13 @@ urlpatterns = [
          },
          name="generic_confirmation_by_form_with_url_and_message"),
 
-    path('by-get/<token:str>', views.confirm_by_get, name="generic_confirmation_by_get"),
+    path('by-get/<str:token>', views.confirm_by_get, name="generic_confirmation_by_get"),
 
-    path('by-get-with-message/<token:str>', views.confirm_by_get, {'success_message': "This is a success message"}, name="generic_confirmation_by_get_with_message"),
+    path('by-get-with-message/<str:token>', views.confirm_by_get, {'success_message': "This is a success message"}, name="generic_confirmation_by_get_with_message"),
 
-    path('by-get-with-url/<token:str>', views.confirm_by_get, {'success_url': "/success/"}, name="generic_confirmation_by_get_with_url"),
+    path('by-get-with-url/<str:token>', views.confirm_by_get, {'success_url': "/success/"}, name="generic_confirmation_by_get_with_url"),
 
-    path('by-get-with-url-and-message/<token:str>', views.confirm_by_get,
+    path('by-get-with-url-and-message/<str:token>', views.confirm_by_get,
          {
              'success_url': "/success/",
              'success_message': "This is a success message"
