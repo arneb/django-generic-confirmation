@@ -1,7 +1,7 @@
 import os.path
 from django import VERSION
 
-INSTALLED_APPS = (
+INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -9,16 +9,16 @@ INSTALLED_APPS = (
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'generic_confirmation',
-)
+]
 
-MIDDLEWARE_CLASSES = MIDDLEWARE = (
+MIDDLEWARE = [
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-)
+]
 
 SITE_ID = 1
 SECRET_KEY = '+zzix-&k$afk-k0d0s7v01w0&15z#ne$71qf28#e$$c*@g742z'
@@ -56,19 +56,10 @@ TEMPLATES = [
 
 
 # prevent migrations from running during tests, because test models have none
-if VERSION < (1,9):
-    MIGRATION_MODULES = {
-        'auth': 'tests.migrations.auth',
-        'contenttypes': 'tests.migrations.contenttypes',
-        'admin': 'tests.migrations.admin',
-        'sessions': 'tests.migrations.sessions',
-        'generic_confirmation': 'tests.migrations.generic_confirmation',
-    }
-else:
-    MIGRATION_MODULES = {
-        'auth': None,
-        'contenttypes': None,
-        'admin': None,
-        'sessions': None,
-        'generic_confirmation': None,
-    }
+MIGRATION_MODULES = {
+    'auth': None,
+    'contenttypes': None,
+    'admin': None,
+    'sessions': None,
+    'generic_confirmation': None,
+}

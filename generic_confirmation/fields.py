@@ -21,7 +21,7 @@ class PickledObject(bytes):
 
 class PickledObjectField(models.Field):
 
-    def from_db_value(self, value, expression, connection, context):
+    def from_db_value(self, value, expression, connection):
         if isinstance(value, PickledObject):
             # If the value is a definite pickle; and an error is raised in de-pickling
             # it should be allowed to propogate.

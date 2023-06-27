@@ -1,7 +1,7 @@
-from django.conf.urls import url, include
 from django.contrib import admin
+from django.urls import include, path
 
 urlpatterns = [
-    url(r'^admin/', admin.site.urls),
-    url(r'^confirm/', include('generic_confirmation.urls')),
+    path('admin/', admin.site.urls),
+    path('confirm/', include('generic_confirmation.urls')),
 ]

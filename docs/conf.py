@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-#
 # django-generic-confirmation documentation build configuration file, created by
 # sphinx-quickstart on Wed Oct 14 14:03:52 2009.
 #
@@ -37,8 +35,8 @@ source_suffix = '.txt'
 master_doc = 'index'
 
 # General information about the project.
-project = u'django-generic-confirmation'
-copyright = u'2009, Arne Brodowski'
+project = 'django-generic-confirmation'
+copyright = '2009, Arne Brodowski'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -173,7 +171,7 @@ htmlhelp_basename = 'django-generic-confirmationdoc'
 # (source start file, target name, title, author, documentclass [howto/manual]).
 latex_documents = [
   ('index', 'django-generic-confirmation.tex', u'django-generic-confirmation Documentation',
-   u'Arne Brodowski', 'manual'),
+   'Arne Brodowski', 'manual'),
 ]
 
 # The name of an image file (relative to this directory) to place at the top of
